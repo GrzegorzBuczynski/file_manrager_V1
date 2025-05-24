@@ -4,6 +4,7 @@ import cv2
 import datetime
 import tkinter as tk
 import subprocess
+import platform
 import sys
 from tkinter import filedialog, ttk, font as tkfont
 from PIL import Image, ImageTk
@@ -12,50 +13,47 @@ from collections import defaultdict
 def open_location(p):
     try:
         path = os.path.dirname(p)
-        # Sprawdź czy to WSL
-        if "microsoft" in os.uname().release.lower():
-            # Konwertuj ścieżkę do formatu Windows
-            if path.startswith("/mnt/"):
-                drive = path[5:6].upper()
-                windows_path = f"{drive}:{path[6:]}".replace("/", "\\")
-            else:
-                windows_path = path  # Obsługa przypadku, gdy ścieżka nie zaczyna się od /mnt/
-            
-            print(f"Otwieranie w WSL, konwertowana ścieżka: {windows_path}")
-            subprocess.run(["explorer.exe", windows_path])
-        elif sys.platform == "win32":
-            # Windows
+        system = platform.system().lower()
+        
+        if system == "windows":
             os.startfile(path)
-        else:
-            # Standardowy Linux
-            subprocess.run(["xdg-open", path])
+        elif system == "darwin":  # macOS
+            subprocess.run(["open", path])
+        elif system == "linux":
+            # Sprawdź czy to WSL
+            if is_wsl():
+                if path.startswith("/mnt/"):
+                    drive = path[5:6].upper()
+                    windows_path = f"{drive}:{path[6:]}".replace("/", "\\")
+                    subprocess.run(["explorer.exe", windows_path])
+                else:
+                    subprocess.run(["explorer.exe", path])
+            else:
+                subprocess.run(["xdg-open", path])
     except Exception as e:
         print(f"Błąd otwierania lokalizacji: {str(e)}")
-        update_info_label(app, f"Błąd: {str(e)}", "red")
 
 def run_file(p):
     try:
-        # Sprawdź czy to WSL
-        if "microsoft" in os.uname().release.lower():
-            # Konwertuj ścieżkę do formatu Windows
-            if p.startswith("/mnt/"):
-                drive = p[5:6].upper()
-                windows_path = f"{drive}:{p[6:]}".replace("/", "\\")
-            else:
-                windows_path = p
-            
-            print(f"Uruchamianie w WSL, konwertowana ścieżka: {windows_path}")
-            subprocess.run(["cmd.exe", "/c", "start", "", windows_path])
-        elif sys.platform == "win32":
-            # Windows
+        system = platform.system().lower()
+        
+        if system == "windows":
             os.startfile(p)
-        else:
-            # Standardowy Linux
-            subprocess.run(["xdg-open", p])
+        elif system == "darwin":  # macOS
+            subprocess.run(["open", p])
+        elif system == "linux":
+            # Sprawdź czy to WSL
+            if is_wsl():
+                if p.startswith("/mnt/"):
+                    drive = p[5:6].upper()
+                    windows_path = f"{drive}:{p[6:]}".replace("/", "\\")
+                    subprocess.run(["cmd.exe", "/c", "start", "", windows_path])
+                else:
+                    subprocess.run(["cmd.exe", "/c", "start", "", p])
+            else:
+                subprocess.run(["xdg-open", p])
     except Exception as e:
         print(f"Błąd uruchamiania pliku: {str(e)}")
-        update_info_label(app, f"Błąd: {str(e)}", "red")
-
 
 def create_action_buttons(frame, path):
     buttons_frame = tk.Frame(frame)
