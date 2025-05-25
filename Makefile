@@ -1,5 +1,4 @@
-
-
+# Makefile dla systemów Unix/Linux - Instalacja zależności Python
 push:
 	git add .
 	git commit -m "make push!"
