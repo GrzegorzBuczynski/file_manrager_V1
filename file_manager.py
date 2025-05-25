@@ -10,6 +10,14 @@ from tkinter import filedialog, ttk, font as tkfont
 from PIL import Image, ImageTk
 from collections import defaultdict
 
+
+def is_wsl():
+    """Sprawdza czy kod działa w WSL"""
+    try:
+        with open('/proc/version', 'r') as f:
+            return 'microsoft' in f.read().lower()
+    except:
+        return False
 def open_location(p):
     try:
         path = os.path.dirname(p)
